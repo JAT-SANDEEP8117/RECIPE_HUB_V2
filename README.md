@@ -1,78 +1,74 @@
-# RecipeHub
+# RecipeHub (MERN Edition)
 
-**RecipeHub** is a beautifully designed and user-friendly recipe website where users can discover, explore, and share a variety of recipes from diverse cuisines worldwide. Built using HTML, CSS, JavaScript, and Bootstrap, it delivers a seamless and interactive experience.
+**RecipeHub** is a premium, full-stack recipe discovery and sharing platform. Re-imagined with the MERN stack, it offers a high-performance, responsive experience for food enthusiasts worldwide.
 
-## Features
+## ✨ Features
 
-- **🔎 Search & Filter:** Instantly search and filter recipes by category (Veg & Non-Veg).
-- **📚 Predefined Recipes:** Includes at least five curated recipes per category from Indian, Italian, Russian, Chinese, and other global cuisines.
-- **📝 Add Recipe:** Users can submit their own recipes via a structured form with image upload functionality.
-- **🎭 Interactive UI:** Hover effects reveal recipe details, and full procedures are displayed in elegant modals.
-- **🎨 Responsive Design:** Built with Bootstrap for a fully responsive and visually appealing layout.
-- **🎬 Dynamic Interactions:** JavaScript-powered interactions enhance usability.
-- **🔗 Seamless Navigation:** Ensures smooth, single-page navigation for an intuitive browsing experience.
+- **🌍 Global Discovery:** Explore a curated list of dishes from India, Italy, China, Russia, and more.
+- **🔍 Smart Search & Filter:** Instantly find recipes by name, country, or dietary preference (Veg/Non-Veg).
+- **📝 Contribution Engine:** Sharpen your culinary influence by adding your own recipes with a rich, multi-step form.
+- **🎨 Premium UI:** A modern, dark-themed interface built with Tailwind CSS v4, featuring smooth animations and glassmorphism.
+- **🔒 Secure Authentication:** Ready-to-go JWT-based authentication for user profiles.
+- **⚡ High Performance:** Powered by Vite and React for lightning-fast navigation.
 
-## Project Structure
+## 🛠️ Technology Stack
 
-```
+- **Frontend:** React.js, Tailwind CSS v4, Lucide React, React Router.
+- **Backend:** Node.js, Express.
+- **Database:** MongoDB (Mongoose).
+- **Form Handling:** Dynamic state management in React.
+
+## 📂 Project Structure
+
+```text
 RecipeHub/
-├── index.html         # Main page displaying categorized recipes
-├── add_recipe.html    # Form page for user recipe submissions
-├── style.css         # CSS for styling and responsiveness
-├── script.js         # JavaScript for search, filters, and modals
-├── images/           # Folder for storing recipe images
+├── client/           # React frontend (Vite)
+│   ├── src/
+│   │   ├── api/      # Local data and API hooks
+│   │   ├── components/# Reusable UI components
+│   │   ├── pages/    # Full-page components
+│   │   └── App.jsx   # Core routing
+├── server/           # Express backend
+│   ├── models/       # Mongoose Schemas
+│   ├── routes/       # API Router
+│   ├── config/       # DB configuration
+│   └── index.js      # Server entry point
+└── OLD CODE/         # Reference files from the legacy project
 ```
 
-## Technologies Used
+## 🚀 Getting Started
 
-- **HTML5** – Structured content with accessibility in mind.
-- **CSS3** – Modern styling with hover effects and smooth transitions.
-- **JavaScript** – Implements search, filtering, and modal interactions.
-- **Bootstrap 5** – Ensures a responsive and interactive UI.
-- **Font Awesome** – Enhances UI with intuitive icons.
+### Prerequisites
 
+- Node.js (v18+)
+- MongoDB Atlas account (or local MongoDB)
 
-## Screenshots
+### Setup Instructions
 
-### Homepage
-![Homepage](Screenshots/home_page.png)
-
-### Filter Feature
-![Home Filter](Screenshots/home_filter.png)
-
-### Add Recipe Form - Step 1
-![Form Page 1](Screenshots/form_page1.png)
-
-### Add Recipe Form - Step 2
-![Form Page 2](Screenshots/form_page2.png)
-
-### Recipe Modal View
-![Recipe Modal](Screenshots/recipe_modal.png)
-
-### Footer
-![Footer](Screenshots/footer.png)
-
-
-## How to Use
-
-1. **Browse Recipes** – Explore various categories.
-2. **Search & Filter** – Find specific recipes using the search bar or filters.
-3. **View Recipe Details** – Click "View Recipe" to see the complete cooking procedure.
-4. **Submit a Recipe** – Use the "Add Recipe" form to contribute your favorite dish.
-
-## Setup Instructions
-
-1. Clone the repository:
-   ```sh
-   git clone https://github.com/JAT-SANDEEP8117/recipe_hub.git
+1. **Clone the Repo:**
+   ```bash
+   git clone <repository-url>
+   cd recipe_hub
    ```
-2. Open `index.html` in a web browser to start exploring recipes.
 
-## Contributing
+2. **Frontend Setup:**
+   ```bash
+   cd client
+   npm install
+   npm run dev
+   ```
 
-We welcome contributions! Feel free to submit pull requests for UI enhancements, additional recipes, or new features.
+3. **Backend Setup:**
+   ```bash
+   cd server
+   npm install
+   # Create a .env file with your MONGO_URI
+   npm start
+   ```
 
-## License
+## 📜 License
 
-This project is licensed under the **MIT License**.
+This project is licensed under the MIT License.
 
+---
+Designed & Developed by **Jat Sandeep** with ♥.
