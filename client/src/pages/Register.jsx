@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, UserPlus, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-toastify';
 
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [role, setRole] = useState('user');
   const [error, setError] = useState('');
   
   const { register } = useAuth();
@@ -16,14 +18,19 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      return setError('Passwords do not match');
+      setError('Passwords do not match');
+      toast.warning('Passwords do not match');
+      return;
     }
     
     try {
-      await register(name, email, password);
+      await register(name, email, password, role);
+      toast.success('Registration successful! Welcome to RecipeHub.');
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      const errMsg = err.response?.data?.message || 'Registration failed. Please try again.';
+      setError(errMsg);
+      toast.error(errMsg);
     }
   };
 
@@ -107,6 +114,18 @@ const Register = () => {
                 className="w-full bg-slate-900 border border-slate-800 rounded-2xl py-4 pl-12 pr-4 text-white focus:ring-2 focus:ring-orange-500/30 outline-none transition-all"
               />
             </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Register As</label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="w-full bg-slate-900 border border-slate-800 rounded-2xl py-4 px-4 text-slate-300 focus:ring-2 focus:ring-orange-500/30 outline-none transition-all cursor-pointer"
+            >
+              <option value="user">User (Browse recipes)</option>
+              <option value="cook">Cook (Submit recipes)</option>
+            </select>
           </div>
 
           <button type="submit" className="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-black text-lg shadow-xl shadow-orange-900/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all mt-4 uppercase tracking-widest">

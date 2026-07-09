@@ -3,6 +3,7 @@ import Navbar from '../components/Navbar';
 import RecipeCard from '../components/RecipeCard';
 import RecipeModal from '../components/RecipeModal';
 import Footer from '../components/Footer';
+import Chatbot from '../components/Chatbot';
 import API from '../api/axiosInstance';
 import { recipes as localRecipes, categories } from '../api/recipeData';
 import { Sparkles, ChefHat, Loader2 } from 'lucide-react';
@@ -30,9 +31,8 @@ const Home = () => {
   }, []);
 
   const allRecipes = useMemo(() => {
-    // Combine local featured recipes with DB recipes
-    // In a real app, you'd probably just fetch all from DB
-    return [...localRecipes, ...dbRecipes];
+    // Graceful fallback to local recipes if database has no records yet
+    return dbRecipes.length > 0 ? dbRecipes : localRecipes;
   }, [dbRecipes]);
 
   const filteredRecipes = useMemo(() => {
@@ -109,7 +109,7 @@ const Home = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {filteredRecipes.map(recipe => (
               <RecipeCard 
-                key={recipe.id} 
+                key={recipe._id || recipe.id} 
                 recipe={recipe} 
                 onClick={() => setSelectedRecipe(recipe)} 
               />
@@ -131,6 +131,9 @@ const Home = () => {
       </main>
 
       <Footer />
+
+      {/* Floating Chatbot */}
+      <Chatbot onSelectRecipe={(recipe) => setSelectedRecipe(recipe)} />
 
       {/* Modal */}
       {selectedRecipe && (

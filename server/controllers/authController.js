@@ -4,15 +4,16 @@ const bcrypt = require('bcryptjs');
 
 // Generate JWT
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'secret123', {
-    expiresIn: '30d'
+  const secret = process.env.JWT_SECRET;
+  if (!secret) throw new Error('JWT_SECRET is not configured in environment variables');
+  return jwt.sign({ id }, secret, {
+    expiresIn: process.env.JWT_EXPIRES_IN || '30d'
   });
 };
 
 // @desc    Register new user
-// @route   POST /api/auth/register
 const registerUser = async (req, res) => {
-  const { name, email, password } = req.body;
+  let { name, email, password, role } = req.body;
 
   if (!name || !email || !password) {
     return res.status(400).json({ message: 'Please add all fields' });
@@ -24,6 +25,14 @@ const registerUser = async (req, res) => {
     return res.status(400).json({ message: 'User already exists' });
   }
 
+  // Prevent administrative role hijacking
+  if (role === 'admin') {
+    role = 'user';
+  }
+  if (!role || !['user', 'cook'].includes(role)) {
+    role = 'user';
+  }
+
   // Hash password
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
@@ -32,7 +41,8 @@ const registerUser = async (req, res) => {
   const user = await User.create({
     name,
     email,
-    password: hashedPassword
+    password: hashedPassword,
+    role
   });
 
   if (user) {
@@ -40,6 +50,7 @@ const registerUser = async (req, res) => {
       _id: user.id,
       name: user.name,
       email: user.email,
+      role: user.role,
       token: generateToken(user._id)
     });
   } else {
@@ -60,6 +71,7 @@ const loginUser = async (req, res) => {
       _id: user.id,
       name: user.name,
       email: user.email,
+      role: user.role,
       token: generateToken(user._id)
     });
   } else {

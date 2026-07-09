@@ -6,6 +6,7 @@ import { Camera, Plus, Minus, Send, MapPin, ChefHat, Info, Loader2 } from 'lucid
 import { categories, types } from '../api/recipeData';
 import API from '../api/axiosInstance';
 import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-toastify';
 
 const AddRecipe = () => {
   const [name, setName] = useState('');
@@ -42,8 +43,9 @@ const AddRecipe = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user) {
-      return setError('You must be logged in to add a recipe');
+    if (!user || (user.role !== 'cook' && user.role !== 'admin')) {
+      toast.error('You must be a certified cook or admin to submit a recipe');
+      return setError('You must be a certified cook or admin to submit a recipe');
     }
 
     setIsSubmitting(true);
@@ -63,21 +65,24 @@ const AddRecipe = () => {
       await API.post('/recipes', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
+      toast.success('Recipe submitted successfully! It is now pending admin review.');
       navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to submit recipe. Please try again.');
+      const errMsg = err.response?.data?.message || 'Failed to submit recipe. Please try again.';
+      setError(errMsg);
+      toast.error(errMsg);
     } finally {
       setIsSubmitting(false);
     }
   };
    
-  if (!user) {
+  if (!user || (user.role !== 'cook' && user.role !== 'admin')) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
         <div className="text-center bg-slate-900 p-12 rounded-3xl border border-slate-800">
           <ChefHat size={64} className="mx-auto text-orange-500 mb-6" />
           <h2 className="text-3xl font-black text-white mb-4">Chef Authentication Required</h2>
-          <p className="text-slate-400 mb-8">Please login to contribute your legendary recipes to our global map.</p>
+          <p className="text-slate-400 mb-8">Please login as a Cook to contribute your legendary recipes to our global map.</p>
           <div className="flex gap-4 justify-center">
             <button onClick={() => navigate('/login')} className="px-8 py-3 bg-orange-600 rounded-xl font-bold hover:bg-orange-500 transition-all">Login</button>
             <button onClick={() => navigate('/')} className="px-8 py-3 bg-slate-800 rounded-xl font-bold hover:bg-slate-700 transition-all">Go Home</button>

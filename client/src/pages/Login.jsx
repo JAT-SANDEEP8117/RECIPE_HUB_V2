@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, LogIn, ArrowLeft } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-toastify';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -13,10 +14,17 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await login(email, password);
-      navigate('/');
+      const data = await login(email, password);
+      toast.success(`Welcome back, ${data.name}!`);
+      if (data.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+      const errMsg = err.response?.data?.message || 'Login failed. Please check your credentials.';
+      setError(errMsg);
+      toast.error(errMsg);
     }
   };
 

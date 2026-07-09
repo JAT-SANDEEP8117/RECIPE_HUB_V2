@@ -23,6 +23,22 @@ const recipeSchema = new mongoose.Schema({
   procedure: [String],
   image: {
     type: String
+  },
+  cloudinaryPublicId: {
+    type: String
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending'
+  },
+  rejectionReason: {
+    type: String
+  },
+  submitterRole: {
+    type: String,
+    enum: ['user', 'cook', 'admin'],
+    default: 'cook'
   }
 }, {
   timestamps: true

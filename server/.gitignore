@@ -1,0 +1,28 @@
+# Dependency directories
+node_modules/
+
+# Environment files — never commit real secrets
+.env
+.env.local
+.env.production
+.env.development
+.env.staging
+.env.test
+.env.*.local
+
+# Allow env.example — this IS committed
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Uploaded temp files (directory is kept via .gitkeep)
+uploads/*
+!uploads/.gitkeep
+
+# OS / Editor files
+.DS_Store
+.vscode/
+.idea/

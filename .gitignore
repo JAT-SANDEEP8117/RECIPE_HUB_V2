@@ -1,0 +1,15 @@
+# Root-level gitignore — acts as a safety net
+# Primary .gitignore files are in client/ and server/
+
+# Never commit .env files at any level
+.env
+.env.*
+!**/.env.example
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/

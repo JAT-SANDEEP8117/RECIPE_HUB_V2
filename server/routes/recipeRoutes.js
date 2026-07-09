@@ -1,11 +1,28 @@
 const express = require('express');
 const router = express.Router();
-const { getRecipes, createRecipe, deleteRecipe } = require('../controllers/recipeController');
-const { protect } = require('../middleware/authMiddleware');
+const { 
+  getRecipes, 
+  getMyRecipes,
+  getAdminRecipes,
+  createRecipe, 
+  reviewRecipe,
+  deleteRecipe 
+} = require('../controllers/recipeController');
+const { protect, authorize } = require('../middleware/authMiddleware');
 const upload = require('../config/multer');
 
+// Public route to get only approved recipes
 router.get('/', getRecipes);
-router.post('/', protect, upload.single('image'), createRecipe);
+
+// Cook routes
+router.get('/my-recipes', protect, authorize('cook', 'admin'), getMyRecipes);
+router.post('/', protect, authorize('cook', 'admin'), upload.single('image'), createRecipe);
+
+// Admin routes
+router.get('/admin/all', protect, authorize('admin'), getAdminRecipes);
+router.patch('/:id/review', protect, authorize('admin'), reviewRecipe);
+
+// Delete route
 router.delete('/:id', protect, deleteRecipe);
 
 module.exports = router;
