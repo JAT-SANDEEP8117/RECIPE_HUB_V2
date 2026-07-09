@@ -39,8 +39,8 @@ const RecipeCard = ({ recipe, onClick }) => {
         </h3>
         
         <div className="flex items-center gap-4 text-slate-400 text-xs mb-4">
-          <span className="flex items-center gap-1"><Clock size={12} /> 25 min</span>
-          <span className="flex items-center gap-1"><ChefHat size={12} /> Easy</span>
+          <span className="flex items-center gap-1"><Clock size={12} /> {recipe.prepTime || '25 min'}</span>
+          <span className="flex items-center gap-1"><ChefHat size={12} /> {recipe.difficulty || 'Easy'}</span>
         </div>
 
         <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-700/50 hover:bg-orange-600 text-slate-200 hover:text-white text-sm font-semibold transition-all group/btn border border-slate-600 group-hover:border-orange-500/50">

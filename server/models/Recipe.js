@@ -15,11 +15,40 @@ const recipeSchema = new mongoose.Schema({
     enum: ['Veg', 'Non-Veg'],
     required: true
   },
+  recipeType: {
+    type: String,
+    enum: ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Dessert'],
+    required: [true, 'Please add a recipe type']
+  },
   origin: {
     type: String,
     required: [true, 'Please add the country of origin']
   },
-  ingredients: [String],
+  prepTime: {
+    type: String,
+    default: '25 min'
+  },
+  difficulty: {
+    type: String,
+    enum: ['Easy', 'Medium', 'Hard'],
+    default: 'Easy'
+  },
+  servings: {
+    type: String,
+    default: '2-3 People'
+  },
+  ingredients: [
+    {
+      name: {
+        type: String,
+        required: [true, 'Please add an ingredient name']
+      },
+      quantity: {
+        type: String,
+        required: [true, 'Please add the required quantity']
+      }
+    }
+  ],
   procedure: [String],
   image: {
     type: String

@@ -1,13 +1,13 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
 const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
-const dotenv = require('dotenv');
 const connectDB = require('../config/db');
 const User = require('../models/User');
 const Recipe = require('../models/Recipe');
 const { uploadImage } = require('../services/cloudinaryService');
-
-dotenv.config();
 
 const seedRecipes = async () => {
   try {
@@ -19,6 +19,10 @@ const seedRecipes = async () => {
       console.error('No admin user found. Please run "npm run seed:admin" first.');
       process.exit(1);
     }
+
+    // Clear existing recipes to allow clean re-seed
+    await Recipe.deleteMany({});
+    console.log('Cleared existing recipes from database.');
 
     const recipesFilePath = path.join(__dirname, 'recipes.json');
     if (!fs.existsSync(recipesFilePath)) {

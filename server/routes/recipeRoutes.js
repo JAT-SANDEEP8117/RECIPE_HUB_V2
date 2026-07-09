@@ -6,7 +6,8 @@ const {
   getAdminRecipes,
   createRecipe, 
   reviewRecipe,
-  deleteRecipe 
+  deleteRecipe,
+  getContributorsStats
 } = require('../controllers/recipeController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const upload = require('../config/multer');
@@ -20,6 +21,7 @@ router.post('/', protect, authorize('cook', 'admin'), upload.single('image'), cr
 
 // Admin routes
 router.get('/admin/all', protect, authorize('admin'), getAdminRecipes);
+router.get('/admin/contributors', protect, authorize('admin'), getContributorsStats);
 router.patch('/:id/review', protect, authorize('admin'), reviewRecipe);
 
 // Delete route

@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import { Camera, Plus, Minus, Send, MapPin, ChefHat, Info, Loader2 } from 'lucide-react';
-import { categories, types } from '../api/recipeData';
+import { Camera, Plus, Minus, Send, MapPin, ChefHat, Info, Loader2, Clock, Users, Flame } from 'lucide-react';
+import { types } from '../api/recipeData';
 import API from '../api/axiosInstance';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
@@ -11,9 +11,12 @@ import { toast } from 'react-toastify';
 const AddRecipe = () => {
   const [name, setName] = useState('');
   const [origin, setOrigin] = useState('');
-  const [category, setCategory] = useState('Indian');
   const [dietaryType, setDietaryType] = useState('Veg');
-  const [ingredients, setIngredients] = useState(['']);
+  const [recipeType, setRecipeType] = useState('Dinner');
+  const [prepTime, setPrepTime] = useState('25 min');
+  const [difficulty, setDifficulty] = useState('Easy');
+  const [servings, setServings] = useState('2-3 People');
+  const [ingredients, setIngredients] = useState([{ name: '', quantity: '' }]);
   const [steps, setSteps] = useState(['']);
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -35,7 +38,7 @@ const AddRecipe = () => {
     }
   };
 
-  const addIngredient = () => setIngredients([...ingredients, '']);
+  const addIngredient = () => setIngredients([...ingredients, { name: '', quantity: '' }]);
   const removeIngredient = (index) => setIngredients(ingredients.filter((_, i) => i !== index));
   
   const addStep = () => setSteps([...steps, '']);
@@ -48,15 +51,32 @@ const AddRecipe = () => {
       return setError('You must be a certified cook or admin to submit a recipe');
     }
 
+    // Filter out blank ingredients
+    const validIngredients = ingredients.filter(ing => ing.name.trim() !== '' && ing.quantity.trim() !== '');
+    if (validIngredients.length === 0) {
+      toast.warning('Please add at least one ingredient.');
+      return setError('Please add at least one ingredient with a name and quantity.');
+    }
+
+    const validSteps = steps.filter(s => s.trim() !== '');
+    if (validSteps.length === 0) {
+      toast.warning('Please add at least one step in instructions.');
+      return setError('Please add at least one step in instructions.');
+    }
+
     setIsSubmitting(true);
     setError('');
 
     const formData = new FormData();
     formData.append('name', name);
     formData.append('origin', origin);
-    formData.append('category', dietaryType); // Logic uses 'category' for Veg/Non-Veg in the model
-    formData.append('ingredients', JSON.stringify(ingredients.filter(i => i.trim() !== '')));
-    formData.append('procedure', JSON.stringify(steps.filter(s => s.trim() !== '')));
+    formData.append('category', dietaryType); // Veg/Non-Veg
+    formData.append('recipeType', recipeType);
+    formData.append('prepTime', prepTime);
+    formData.append('difficulty', difficulty);
+    formData.append('servings', servings);
+    formData.append('ingredients', JSON.stringify(validIngredients));
+    formData.append('procedure', JSON.stringify(validSteps));
     if (image) {
       formData.append('image', image);
     }
@@ -90,9 +110,11 @@ const AddRecipe = () => {
         </div>
       </div>
     );
-  }  return (
+  }
+
+  return (
     <div className="min-h-screen bg-slate-950 text-slate-200">
-      <Navbar />
+      <Navbar showSearch={false} />
       
       <main className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto">
@@ -141,16 +163,18 @@ const AddRecipe = () => {
                     />
                   </div>
                 </div>
+
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-slate-300">Category</label>
+                  <label className="text-sm font-semibold text-slate-300">Meal Type / Recipe Type</label>
                   <select 
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
+                    value={recipeType}
+                    onChange={(e) => setRecipeType(e.target.value)}
                     className="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-orange-500/50 outline-none transition-all appearance-none cursor-pointer"
                   >
-                    {categories.filter(c => c !== 'All').map(c => <option key={c}>{c}</option>)}
+                    {['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Dessert'].map(t => <option key={t}>{t}</option>)}
                   </select>
                 </div>
+
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-slate-300">Dietary Type</label>
                   <select 
@@ -164,11 +188,62 @@ const AddRecipe = () => {
               </div>
             </div>
 
+            {/* Preparation Metadata Section */}
+            <div className="bg-slate-900/50 rounded-3xl p-8 border border-slate-800 shadow-xl">
+              <div className="flex items-center gap-2 mb-8 text-orange-500 font-bold uppercase tracking-widest text-xs">
+                <ChefHat size={16} />
+                Preparation & Cooking Specs
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-300 flex items-center gap-1.5">
+                    <Clock size={14} className="text-slate-400" /> Prep Time
+                  </label>
+                  <input 
+                    type="text" 
+                    required
+                    value={prepTime}
+                    onChange={(e) => setPrepTime(e.target.value)}
+                    placeholder="e.g. 25 min"
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-orange-500/50 outline-none transition-all"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-300 flex items-center gap-1.5">
+                    <Flame size={14} className="text-slate-400" /> Difficulty
+                  </label>
+                  <select 
+                    value={difficulty}
+                    onChange={(e) => setDifficulty(e.target.value)}
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-orange-500/50 outline-none transition-all appearance-none cursor-pointer"
+                  >
+                    {['Easy', 'Medium', 'Hard'].map(d => <option key={d}>{d}</option>)}
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-300 flex items-center gap-1.5">
+                    <Users size={14} className="text-slate-400" /> Servings
+                  </label>
+                  <input 
+                    type="text" 
+                    required
+                    value={servings}
+                    onChange={(e) => setServings(e.target.value)}
+                    placeholder="e.g. 2-3 People"
+                    className="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 px-4 text-white focus:ring-2 focus:ring-orange-500/50 outline-none transition-all"
+                  />
+                </div>
+              </div>
+            </div>
+
             {/* Ingredients Section */}
             <div className="bg-slate-900/50 rounded-3xl p-8 border border-slate-800 shadow-xl">
               <div className="flex items-center justify-between mb-8 text-orange-500 font-bold uppercase tracking-widest text-xs">
                  <div className="flex items-center gap-2">
-                   <ChefHat size={16} />
+                   <Plus size={16} />
                    Ingredients
                  </div>
                  <button 
@@ -180,28 +255,40 @@ const AddRecipe = () => {
                  </button>
               </div>
               
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {ingredients.map((ing, idx) => (
-                  <div key={idx} className="flex gap-3">
+                  <div key={idx} className="flex flex-col sm:flex-row gap-3">
                     <input 
                       type="text" 
                       required
-                      value={ing}
+                      value={ing.name}
                       onChange={(e) => {
                         const newIngs = [...ingredients];
-                        newIngs[idx] = e.target.value;
+                        newIngs[idx].name = e.target.value;
                         setIngredients(newIngs);
                       }}
-                      placeholder="e.g. 2 tbsp Olive Oil"
-                      className="flex-1 bg-slate-800 border border-slate-700 rounded-xl py-2 px-4 text-white focus:ring-2 focus:ring-orange-500/50 outline-none transition-all text-sm"
+                      placeholder="Ingredient Name (e.g. Olive Oil)"
+                      className="flex-2 bg-slate-800 border border-slate-700 rounded-xl py-2.5 px-4 text-white focus:ring-2 focus:ring-orange-500/50 outline-none transition-all text-sm"
+                    />
+                    <input 
+                      type="text" 
+                      required
+                      value={ing.quantity}
+                      onChange={(e) => {
+                        const newIngs = [...ingredients];
+                        newIngs[idx].quantity = e.target.value;
+                        setIngredients(newIngs);
+                      }}
+                      placeholder="Quantity (e.g. 2 tbsp)"
+                      className="flex-1 bg-slate-800 border border-slate-700 rounded-xl py-2.5 px-4 text-white focus:ring-2 focus:ring-orange-500/50 outline-none transition-all text-sm font-mono"
                     />
                     {ingredients.length > 1 && (
                       <button 
                         type="button" 
                         onClick={() => removeIngredient(idx)}
-                        className="p-2 bg-slate-800/50 hover:bg-red-500/20 text-slate-500 hover:text-red-400 rounded-xl transition-all border border-slate-700"
+                        className="sm:self-center p-2.5 bg-slate-800/50 hover:bg-red-500/20 text-slate-500 hover:text-red-400 rounded-xl transition-all border border-slate-700"
                       >
-                        <Minus size={18} />
+                        <Minus size={16} />
                       </button>
                     )}
                   </div>
@@ -281,7 +368,7 @@ const AddRecipe = () => {
 
             <button 
               disabled={isSubmitting}
-              className="w-full py-5 rounded-3xl bg-gradient-to-r from-orange-600 via-orange-500 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-black text-xl shadow-2xl shadow-orange-900/30 flex items-center justify-center gap-3 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-5 rounded-3xl bg-gradient-to-r from-orange-600 via-orange-500 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-black text-xl shadow-2xl shadow-orange-950/30 flex items-center justify-center gap-3 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? <Loader2 className="animate-spin" size={24} /> : <Send size={24} />}
               {isSubmitting ? 'SUBMITTING...' : 'SUBMIT RECIPE'}

@@ -78,6 +78,76 @@ const sendRecipeReviewNotification = async (recipe, cookName, cookEmail) => {
   }
 };
 
+const sendWelcomeNewsletterEmail = async (email) => {
+  const transporter = createTransporter();
+  const mailOptions = {
+    from: process.env.MAIL_FROM || `"RecipeHub Updates" <noreply@recipehub.com>`,
+    to: email,
+    subject: `🎉 Welcome to the RecipeHub Newsletter!`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <h2 style="color: #ea580c; border-bottom: 2px solid #f97316; padding-bottom: 10px;">Welcome to RecipeHub!</h2>
+        <p>Hello Food Enthusiast,</p>
+        <p>Thank you for subscribing to the RecipeHub newsletter. You will now receive weekly recipe highlights, chef tips, and global culinary updates directly in your inbox.</p>
+        <p>Stay tuned for our upcoming culinary highlights!</p>
+        <hr style="border: 0; border-top: 1px solid #e2e8f0; margin-top: 30px;"/>
+        <p style="font-size: 11px; color: #94a3b8; text-align: center;">RecipeHub V2 - Culinary Newsletter Team</p>
+      </div>
+    `
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Welcome email sent to ${email}: ${info.messageId}`);
+    return info;
+  } catch (error) {
+    console.error(`Failed to send welcome email to ${email}: ${error.message}`);
+  }
+};
+
+const sendNewRecipeNewsletterEmail = async (recipe, subscriberEmails) => {
+  if (!subscriberEmails || subscriberEmails.length === 0) return;
+  const transporter = createTransporter();
+  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+
+  for (const email of subscriberEmails) {
+    const mailOptions = {
+      from: process.env.MAIL_FROM || `"RecipeHub Updates" <noreply@recipehub.com>`,
+      to: email,
+      subject: `🍳 New Recipe Alert: ${recipe.name}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+          <h2 style="color: #ea580c; border-bottom: 2px solid #f97316; padding-bottom: 10px;">New Recipe Approved on RecipeHub!</h2>
+          <p>Hello Food Lover,</p>
+          <p>A delicious new recipe has been added to our catalog and is waiting for you to try it out!</p>
+          
+          <div style="text-align: center; margin: 20px 0;">
+            <img src="${recipe.image || 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?q=80&w=1000&auto=format&fit=crop'}" alt="${recipe.name}" style="max-width: 100%; height: 200px; object-fit: cover; border-radius: 8px;" />
+            <h3 style="color: #1e293b; margin-top: 10px;">${recipe.name}</h3>
+            <p style="color: #64748b; font-size: 14px;">Origin: ${recipe.origin} | Category: ${recipe.category}</p>
+          </div>
+
+          <div style="text-align: center; margin-top: 30px; margin-bottom: 20px;">
+            <a href="${clientUrl}" style="background-color: #ea580c; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View Recipe Details</a>
+          </div>
+          
+          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin-top: 30px;"/>
+          <p style="font-size: 11px; color: #94a3b8; text-align: center;">RecipeHub V2 - Culinary Newsletter Team</p>
+        </div>
+      `
+    };
+
+    try {
+      await transporter.sendMail(mailOptions);
+      console.log(`Newsletter recipe alert email sent to ${email}`);
+    } catch (err) {
+      console.error(`Failed to send recipe alert to ${email}: ${err.message}`);
+    }
+  }
+};
+
 module.exports = {
-  sendRecipeReviewNotification
+  sendRecipeReviewNotification,
+  sendWelcomeNewsletterEmail,
+  sendNewRecipeNewsletterEmail
 };

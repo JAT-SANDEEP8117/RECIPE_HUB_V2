@@ -8,6 +8,7 @@
     "dev": "nodemon index.js",
     "seed:admin": "node scripts/seedAdmin.js",
     "seed:recipes": "node scripts/seedRecipes.js",
+    "migrate": "node scripts/migrateRecipes.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

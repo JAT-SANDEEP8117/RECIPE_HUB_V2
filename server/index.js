@@ -52,6 +52,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/recipes', require('./routes/recipeRoutes'));
 app.use('/api/chatbot', require('./routes/chatbotRoutes'));
+app.use('/api/newsletter', require('./routes/newsletterRoutes'));
 
 // Main Route
 app.get('/', (req, res) => {

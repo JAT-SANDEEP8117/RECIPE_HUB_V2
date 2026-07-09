@@ -1,6 +1,6 @@
 const Recipe = require('../models/Recipe');
 const { uploadImage, deleteImage } = require('../services/cloudinaryService');
-const { sendRecipeReviewNotification } = require('../services/emailService');
+const { sendRecipeReviewNotification, sendNewRecipeNewsletterEmail } = require('../services/emailService');
 
 // @desc    Get approved recipes (public)
 // @route   GET /api/recipes
@@ -40,10 +40,10 @@ const getAdminRecipes = async (req, res) => {
 const createRecipe = async (req, res) => {
   let uploadedPublicId = null;
   try {
-    const { name, category, origin, ingredients, procedure } = req.body;
+    const { name, category, recipeType, origin, ingredients, procedure, prepTime, difficulty, servings } = req.body;
     
-    if (!name || !category || !origin) {
-      return res.status(400).json({ message: 'Please add all required fields' });
+    if (!name || !category || !recipeType || !origin) {
+      return res.status(400).json({ message: 'Please add all required fields: name, category, recipeType, origin' });
     }
 
     // Ingredients and procedure come as JSON strings from FormData, need to parse them
@@ -67,7 +67,11 @@ const createRecipe = async (req, res) => {
       user: req.user.id,
       name,
       category, // In the schema, Veg/Non-Veg is stored in 'category'
+      recipeType,
       origin,
+      prepTime: prepTime || '25 min',
+      difficulty: difficulty || 'Easy',
+      servings: servings || '2-3 People',
       ingredients: parsedIngredients || [],
       procedure: parsedProcedure || [],
       image: imageUrl,
@@ -121,6 +125,7 @@ const reviewRecipe = async (req, res) => {
       return res.status(404).json({ message: 'Recipe not found' });
     }
 
+    const oldStatus = recipe.status;
     recipe.status = status;
     if (status === 'rejected') {
       recipe.rejectionReason = reason || 'No reason provided';
@@ -129,6 +134,24 @@ const reviewRecipe = async (req, res) => {
     }
 
     await recipe.save();
+
+    // If recipe is approved and was not approved before, notify newsletter subscribers asynchronously
+    if (status === 'approved' && oldStatus !== 'approved') {
+      (async () => {
+        try {
+          const Subscriber = require('../models/Subscriber');
+          const subscribers = await Subscriber.find({});
+          if (subscribers.length > 0) {
+            const emails = subscribers.map(s => s.email);
+            console.log(`Sending new recipe alert to ${emails.length} subscribers...`);
+            await sendNewRecipeNewsletterEmail(recipe, emails);
+          }
+        } catch (err) {
+          console.error('Error sending newsletter updates on recipe approval:', err.message);
+        }
+      })();
+    }
+
     res.json({ message: `Recipe successfully ${status}`, recipe });
   } catch (error) {
     res.status(500).json({ message: 'Server Error' });
@@ -167,11 +190,60 @@ const deleteRecipe = async (req, res) => {
   }
 };
 
+// @desc    Get cooks/contributors statistics (Admin only)
+// @route   GET /api/recipes/admin/contributors
+const getContributorsStats = async (req, res) => {
+  try {
+    const User = require('../models/User');
+    const stats = await User.aggregate([
+      {
+        $match: {
+          role: { $in: ['cook', 'admin'] }
+        }
+      },
+      {
+        $lookup: {
+          from: "recipes",
+          localField: "_id",
+          foreignField: "user",
+          as: "userRecipes"
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          email: 1,
+          role: 1,
+          createdAt: 1,
+          recipeCount: { $size: "$userRecipes" },
+          latestRecipeDate: {
+            $cond: {
+              if: { $gt: [{ $size: "$userRecipes" }, 0] },
+              then: { $max: "$userRecipes.createdAt" },
+              else: null
+            }
+          }
+        }
+      },
+      {
+        $sort: { recipeCount: -1 }
+      }
+    ]);
+
+    res.json(stats);
+  } catch (error) {
+    console.error('Error fetching contributor stats:', error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
 module.exports = {
   getRecipes,
   getMyRecipes,
   getAdminRecipes,
   createRecipe,
   reviewRecipe,
-  deleteRecipe
+  deleteRecipe,
+  getContributorsStats
 };

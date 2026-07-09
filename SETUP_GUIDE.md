@@ -71,12 +71,12 @@ npm install
    ```
 
 ### Step 5 — Configure `.env`
-Create `server/.env` (copy from `server/.env.example`):
+In `server/.env`, set:
 ```env
 MONGO_URI=mongodb+srv://yourUsername:yourPassword@cluster0.abcde.mongodb.net/recipehub?retryWrites=true&w=majority
 ```
 
-> **Important:** The app always connects to the `recipehub` database (enforced in code). This will not interfere with any other databases in your cluster (e.g. Spend Smart).
+> **Important:** The app always connects to the `recipehub` database (enforced in code). This will not interfere with any other databases in your cluster.
 
 ---
 
@@ -171,15 +171,17 @@ CLOUDINARY_API_SECRET=your_api_secret
 
 ## 7. Gmail SMTP Setup (Nodemailer)
 
-RecipeHub emails the admin when a cook submits a recipe.
+RecipeHub uses SMTP to send:
+- **Admin notification email** when a cook submits a recipe for review
+- **Welcome email** when someone subscribes to the newsletter
+- **New recipe alert** to all newsletter subscribers when a recipe is approved
 
 ### Step 1 — Enable 2-Factor Authentication on Gmail
-You need 2FA enabled before you can create an App Password.
 1. Go to [myaccount.google.com/security](https://myaccount.google.com/security)
 2. Under **How you sign in to Google** → click **2-Step Verification** → enable it
 
 ### Step 2 — Create a Gmail App Password
-> ⚠️ Never use your regular Gmail password in the app — use an App Password instead.
+> ⚠️ Never use your regular Gmail password — use an App Password instead.
 
 1. Go to [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
 2. Under **Select app** → choose **Mail**
@@ -201,16 +203,17 @@ ADMIN_EMAIL=your_admin_email@gmail.com
 ### Step 4 — Test Email
 1. Register as a Cook and submit a recipe
 2. Check the admin email inbox for a review notification
-3. Check server terminal — it logs `Review notification email sent: <messageId>`
+3. Subscribe to the newsletter in the footer — check inbox for welcome email
+4. Approve a recipe in admin dashboard — subscribers receive a recipe alert
 
 ### Email Failure Handling
-If SMTP fails, the recipe is **still saved** — the server logs the error but does not delete the submission. Check server logs to debug SMTP issues.
+If SMTP fails, the recipe is **still saved** and newsletter subscriptions still work. The server logs the error but does not block any operation.
 
 ---
 
 ## 8. Groq API Setup
 
-RecipeHub uses Groq's Llama-3 model as the AI recipe chatbot.
+RecipeHub uses Groq's Llama-3.3-70b model as the AI recipe chatbot.
 
 ### Step 1 — Create Account
 1. Go to [console.groq.com](https://console.groq.com)
@@ -260,32 +263,34 @@ This script:
 1. Open the app
 2. Click **Login** in the navbar
 3. Use the admin email and password
-4. You will be automatically redirected to the **Admin Dashboard**
+4. The profile dropdown will show **Admin Dashboard** link
 
 ---
 
-## 10. Recipe Migration (Seed Existing Recipes)
+## 10. Recipe Seeding (Seed All 30 Recipes)
 
 ### Prerequisites
 - Admin user must exist (`npm run seed:admin` completed)
 - Cloudinary credentials must be configured in `.env`
 
-### Run the Migration
+### Run the Seed Script
 ```bash
 cd server
 npm run seed:recipes
 ```
 
 This script:
-- Reads all 26 pre-existing recipes from `scripts/recipes.json`
+- Seeds all **30 recipes** (26 original global recipes + 4 new diverse dishes: French Crepes, Korean Bibimbap, Turkish Shakshuka, Vietnamese Pho)
 - Uploads each recipe image from `client/public/images/` to Cloudinary
+- Stores structured ingredients as `{ name, quantity }` objects
 - Saves each recipe to MongoDB as `approved` under the admin user
-- Skips recipes that already exist (idempotent — safe to rerun)
+- **Skips recipes that already exist** (fully idempotent — safe to rerun)
 
-### Verify Migration
+### Verify Seeding
 1. Start the app
-2. Home page should now show all recipes loaded from MongoDB
-3. Check server terminal — each recipe upload is logged
+2. Home page should show recipes loaded from MongoDB
+3. Click "Others" cuisine filter — Sushi, Tacos, Korean Bibimbap, etc. should appear
+4. Server terminal logs each recipe upload
 
 ---
 
@@ -307,7 +312,6 @@ npm run dev       # Vite dev server at http://localhost:5173
 
 ### Start Both (Windows)
 Open two terminals and run the above commands separately.
-The old `start-all.bat` has been removed. Use the npm scripts above.
 
 ---
 
@@ -360,8 +364,11 @@ Update `CLIENT_URL` in the server environment to match your deployed frontend UR
 | `Groq API key not configured` | Add `GROQ_API_KEY` to `server/.env` |
 | Admin can't login | Run `npm run seed:admin` first |
 | Recipes not showing | Run `npm run seed:recipes` after admin seed |
-| `CORS error` in browser | Ensure `CLIENT_URL` in server `.env` matches frontend URL |
+| "Others" filter shows nothing | DB origin values don't match — recipe origins should not include India/Italy/Russia/China |
+| Newsletter subscribe fails | Check if `SMTP_USER` and `SMTP_PASS` are correct in `.env` |
+| `CORS error` in browser | Ensure `CLIENT_URL` in server `.env` matches frontend URL exactly |
 | Port 5000 already in use | Change `PORT=5001` in server `.env` |
+| Chatbot gives no recommendations | Approve at least one recipe in Admin Dashboard first |
 
 ---
 

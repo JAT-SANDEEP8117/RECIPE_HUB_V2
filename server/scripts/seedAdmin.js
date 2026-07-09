@@ -24,13 +24,13 @@ const seedAdmin = async () => {
     let admin = await User.findOne({ email });
 
     if (admin) {
-      console.log('Admin user already exists.');
-      // Ensure role is admin
-      if (admin.role !== 'admin') {
-        admin.role = 'admin';
-        await admin.save();
-        console.log('Updated existing user role to admin.');
-      }
+      console.log('Admin user already exists. Updating credentials from .env...');
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      admin.password = hashedPassword;
+      admin.role = 'admin';
+      await admin.save();
+      console.log('Admin user credentials successfully updated.');
     } else {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
