@@ -1,0 +1,9 @@
+1. forget password feature  corection 
+2. fixing the footer explore part 
+3. afer search the page should be moved up 
+4. still the hero part seems much big 
+5. add view option for the entered passwords 
+6. the recipe type and dietary filter in the top 
+7. while clicking on home button it should scroll to the top of the page
+8. should remove the V2 name + update the about page of the website 
+9. about page got missed totally 
